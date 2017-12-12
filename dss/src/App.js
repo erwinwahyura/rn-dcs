@@ -1,16 +1,15 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- * @flow
- */
-
 import React, { Component } from 'react';
 import {
+  AppRegistry,
   Platform,
   StyleSheet,
   Text,
   View
 } from 'react-native';
+import { StackNavigator } from 'react-navigation';
+
+import Login from './components/Login';
+import Home from './components/Home';
 
 const instructions = Platform.select({
   ios: 'Press Cmd+R to reload,\n' +
@@ -19,20 +18,20 @@ const instructions = Platform.select({
     'Shake or press menu button for dev menu',
 });
 
+const HomeScreen = StackNavigator({
+  Login: { screen: Login },
+  // Home: { screen: Home },
+});
+
+
 export default class App extends Component<{}> {
   render() {
     return (
-      <View style={styles.container}>
-        <Text style={styles.welcome}>
-          Welcome to React Native!
-        </Text>
-        <Text style={styles.instructions}>
-          To get started, edit App.js
-        </Text>
-        <Text style={styles.instructions}>
-          {instructions}
-        </Text>
+      // <Provider store={store}>
+      <View>
+        <HomeScreen/>
       </View>
+      // </Provider>
     );
   }
 }
@@ -55,3 +54,5 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
 });
+
+AppRegistry.registerComponent('App', () => App);
