@@ -10,6 +10,7 @@ import {
     Image
 } from 'react-native';
 
+import { FormLabel, FormInput } from 'react-native-elements'
 
 export default class Login extends Component {
   
@@ -20,12 +21,20 @@ export default class Login extends Component {
   static navigationOptions = {
      header: null
   };
-  
+
   render() {
     const { navigate } = this.props.navigation;
     return (
+        
       <View>
           <Text>Welcome To APPS</Text>
+
+          <Text>Welcome To APPS</Text>
+          <Text>Welcome To APPS</Text>
+          <Text>Welcome To APPS</Text>
+          <FormLabel>Name</FormLabel>
+            <FormInput onChangeText={someFunction}/>
+            <FormValidationMessage>Error message</FormValidationMessage>
         <Button onPress={() => navigate('Main')}
           title="Get Started">
         </Button>
