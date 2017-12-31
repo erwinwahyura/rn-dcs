@@ -228,7 +228,7 @@ export default class AddKaryawan extends Component {
                                         style={styles.buttonList}
                                         onPress={() => {this.deleteKaryawan(rowData.id)}}
                                     >
-                                        <Text style={{ margin: 5, underlayColor: '#eaeaea'}}> Delete </Text>
+                                        <Text style={{ margin: 5}}> Delete </Text>
                                     </TouchableOpacity>
                                 </View>
                             </View>

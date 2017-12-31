@@ -17,7 +17,7 @@ export default class NilaiKaryawan extends Component {
     }
     
     static navigationOptions = {
-        title: 'Home',
+        title: 'Penialaian',
     };
 
     render() {

@@ -17,7 +17,7 @@ export default class ProcessFuzzy extends Component {
     }
     
     static navigationOptions = {
-        title: 'Home',
+        title: 'Result',
     };
 
     render() {
