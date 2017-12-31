@@ -31,7 +31,7 @@ export default class Login extends Component {
 
           <Text>Welcome To APPS</Text>
           <Text>Welcome To APPS</Text>
-          <Text>Welcome To APPS</Text>
+          
           <FormLabel>Name</FormLabel>
             <FormInput onChangeText={someFunction}/>
             <FormValidationMessage>Error message</FormValidationMessage>
