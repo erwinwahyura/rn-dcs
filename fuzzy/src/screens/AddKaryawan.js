@@ -7,7 +7,7 @@ import {
     TextInput,
     Button,
     Image,
-    ActivityIndicator, ListView, Modal, TouchableHighlight
+    ActivityIndicator, ListView, Modal, TouchableHighlight, TouchableOpacity
 } from 'react-native';
 
 import axios from 'axios';
@@ -25,11 +25,17 @@ export default class AddKaryawan extends Component {
                 nip: '',
                 nama: '',
                 jabatan: ''
-            }
+            },
+            modalAddKaryawan: false,
         }
     }
     setModalVisible(visible) {
         this.setState({modalVisible: visible});
+    }
+
+    setModalKaryawan(visible) {
+        this.setState({modalAddKaryawan: visible});
+        this.setState({id: 0, nip:'', nama: '', jabatan: ''})
     }
 
     static navigationOptions = {
@@ -53,6 +59,7 @@ export default class AddKaryawan extends Component {
             console.error('err : ',error);
         });
     }
+
     show_editKaryawan(id, nip, nama, jabatan) {
         console.log('your id', id);
         this.setState({id: id, nip: nip, nama: nama, jabatan: jabatan})
@@ -80,15 +87,35 @@ export default class AddKaryawan extends Component {
 
     }
 
-    addKaryawan() {
-        axios.post('', {
-
+    addKaryawan(nip, nama, jabatan) {
+        var env = 'https://erwar.id/karyawans/api/';
+        axios.post(env, {
+            nip: nip,
+            nama: nama,
+            jabatan: jabatan
         })
         .then((response) => {
-
+            console.log('respon add ', response);
+            this.componentDidMount()
+            alert('success add data karyawan')
         })
         .catch((err) => {
-            
+            console.log('errr ', err);
+            alert('Uh Oh!.. Sorry Error.')  
+        })
+    }
+
+    deleteKaryawan(id) {
+        var env = 'https://erwar.id/karyawans/api/';
+        axios.delete(env+id)
+        .then((response) => {
+            console.log('respon delete ', response);
+            this.componentDidMount()
+            alert('success delete data karyawan')
+        })
+        .catch((err) => {
+            console.log('errr ', err);
+            alert('Uh Oh!.. Sorry Error.')  
         })
     }
 
@@ -106,7 +133,69 @@ export default class AddKaryawan extends Component {
            
             <View style={{flex: 1, padding: 20}}>
                 <Text style={styles.welcome}>Daftar Karyawan</Text>
+                <TouchableOpacity
+                    style={styles.buttonAddKaryawan}
+                    onPress={() => {this.setModalKaryawan(true)}}
+                >
+                    <Text style={styles.button}> Add Karyawan </Text>
+                </TouchableOpacity>
                 
+                {/* ------------------------------------------ */}
+                {/* =========== Modal ADD KARYAWAN ===========*/}
+                
+                <Modal
+                        animationType={"fade"}
+                        transparent={false}
+                        visible={this.state.modalAddKaryawan}
+                        onRequestClose={() => {alert("Modal has been closed.")}}
+                    >
+                        <View style={{marginTop: 22}}>
+                            <View>
+                                <Text style={styles.welcome}>Add Data Karyawan</Text>
+                                <View style={styles.frameEdit}>
+                                    <View style={styles.inFrameEdit}>
+
+                                        <TextInput
+                                            style={styles.TextInput}
+                                            placeholder="nip.."
+                                            onChangeText={(nip) => this.setState({nip})}
+                                            value={this.state.nip}
+                                        />
+                                        <TextInput
+                                            style={styles.TextInput}
+                                            placeholder="nama.."
+                                            onChangeText={(nama) => this.setState({nama})}
+                                            value={this.state.nama}
+                                        />
+                                        <TextInput
+                                            style={styles.TextInput}
+                                            placeholder="jabatan.."
+                                            onChangeText={(jabatan) => this.setState({jabatan})}
+                                            value={this.state.jabatan}
+                                        />
+                                        <View style={styles.buttonEDIT}>
+                                            <TouchableOpacity style={styles.inFrameEditButton}
+                                                onPress={() => {
+                                                    this.addKaryawan(this.state.nip, this.state.nama, this.state.jabatan)
+                                                    this.setModalKaryawan(!this.state.modalAddKaryawan)
+                                                }}
+                                            >
+                                                <Text>ADD</Text>
+                                            </TouchableOpacity>
+                                            <TouchableOpacity style={styles.inFrameEditButton}
+                                                onPress={() => {
+                                                    this.setModalKaryawan(!this.state.modalAddKaryawan)
+                                                }}
+                                            >
+                                                <Text>CANCEL</Text>
+                                            </TouchableOpacity>
+                                        </View>
+                                    </View>
+                                </View>
+                            </View>
+                        </View>
+                    </Modal>
+                    {/* ------------------------------------------ */}
                 <ListView
                     dataSource={this.state.dataSource}
                     renderRow={(rowData) => 
@@ -128,12 +217,20 @@ export default class AddKaryawan extends Component {
                                 }}>
                                     Jabatan: {rowData.jabatan}
                                 </Text>
-                                <TouchableHighlight
-                                    style={styles.button}
-                                    onPress={() => {this.show_editKaryawan(rowData.id, rowData.nip, rowData.nama, rowData.jabatan)}}
-                                >
-                                    <Text style={{ margin: 5}}> Edit </Text>
-                                </TouchableHighlight>
+                                <View style={styles.buttonEDIT}>
+                                    <TouchableOpacity
+                                        style={styles.buttonList}
+                                        onPress={() => {this.show_editKaryawan(rowData.id, rowData.nip, rowData.nama, rowData.jabatan)}}
+                                    >
+                                        <Text style={{ margin: 5}}> Edit </Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                        style={styles.buttonList}
+                                        onPress={() => {this.deleteKaryawan(rowData.id)}}
+                                    >
+                                        <Text style={{ margin: 5, underlayColor: '#eaeaea'}}> Delete </Text>
+                                    </TouchableOpacity>
+                                </View>
                             </View>
                         </View>
                     }
@@ -141,6 +238,9 @@ export default class AddKaryawan extends Component {
                 
 
                 <View>
+                    {/* ------------------------------------------ */}
+                    {/* =========== Modal EDIT KARYAWAN ===========*/}
+
                     <Modal
                         animationType={"fade"}
                         transparent={false}
@@ -172,27 +272,28 @@ export default class AddKaryawan extends Component {
                                             value={this.state.jabatan}
                                         />
                                         <View style={styles.buttonEDIT}>
-                                            <TouchableHighlight style={styles.inFrameEditButton}
+                                            <TouchableOpacity style={styles.inFrameEditButton}
                                                 onPress={() => {
                                                     this.editKaryawan(this.state.id, this.state.nip, this.state.nama, this.state.jabatan)
                                                     this.setModalVisible(!this.state.modalVisible)
                                                 }}
                                             >
                                                 <Text>EDIT</Text>
-                                            </TouchableHighlight>
-                                            <TouchableHighlight style={styles.inFrameEditButton}
+                                            </TouchableOpacity>
+                                            <TouchableOpacity style={styles.inFrameEditButton}
                                                 onPress={() => {
                                                     this.setModalVisible(!this.state.modalVisible)
                                                 }}
                                             >
                                                 <Text>CANCEL</Text>
-                                            </TouchableHighlight>
+                                            </TouchableOpacity>
                                         </View>
                                     </View>
                                 </View>
                             </View>
                         </View>
                     </Modal>
+                    {/* ------------------------------------------ */}
                 </View>
             </View>
         )
@@ -231,13 +332,13 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   button: {
-    alignItems: 'flex-end',
+    flexDirection: 'row',
     backgroundColor: '#DDDDDD',
     padding: 1,
     marginTop: 5,
     borderRadius: 5,
     marginBottom: 3,
-    width: 50,
+    alignItems: 'center',
   },
   frameEdit: {
     padding: 20,
@@ -257,13 +358,28 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     alignSelf: 'auto',
     
-},
+ },
   buttonEDIT: {
     flexDirection: 'row',
     backgroundColor: '#eaeaea',
     justifyContent: 'flex-start',
     padding: 5,
     margin: 15,
+    borderRadius: 5,
+  },
+  buttonAddKaryawan: {
+    alignItems: 'center',
+    backgroundColor: '#DDDDDD',
+    borderRadius: 5,
+    marginRight: 80,
+    marginLeft: 80,
+    marginBottom: 10,
+  },
+  buttonList: {
+    flex: 1,
+    alignItems: 'flex-start',
+    flexDirection: 'row',
+    backgroundColor: '#eaeaea',
     borderRadius: 5,
   }
 });
