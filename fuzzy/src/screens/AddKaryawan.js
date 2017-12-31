@@ -10,6 +10,7 @@ import {
     ActivityIndicator, ListView, Modal, TouchableHighlight
 } from 'react-native';
 
+import axios from 'axios';
 
 export default class AddKaryawan extends Component {
     constructor() {
@@ -19,6 +20,12 @@ export default class AddKaryawan extends Component {
             isloading: true,
             dataSource: new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2}),
             modalVisible: false,
+            objEdit: {
+                id: 0,
+                nip: '',
+                nama: '',
+                jabatan: ''
+            }
         }
     }
     setModalVisible(visible) {
@@ -30,8 +37,8 @@ export default class AddKaryawan extends Component {
     };
 
     componentDidMount() {
-        var envss = 'https://erwar.id/karyawans/api';
-        return fetch(envss)
+        var env = 'https://erwar.id/karyawans/api';
+        return fetch(env)
         .then((response) => response.json())
         .then((responseJson) => {
             console.log('wow: ',responseJson);
@@ -46,12 +53,46 @@ export default class AddKaryawan extends Component {
             console.error('err : ',error);
         });
     }
-    editKaryawan(id) {
-        //do edit
-        //alert('your id'+id)
+    show_editKaryawan(id, nip, nama, jabatan) {
         console.log('your id', id);
+        this.setState({id: id, nip: nip, nama: nama, jabatan: jabatan})
+        console.log(this.state.objEdit);
         this.setModalVisible(true)
     }
+
+    editKaryawan(id, nip, nama, jabatan) {
+        var env = 'https://erwar.id/karyawans/api/';
+        console.log('objectsss', id, nip, nama, jabatan);
+        axios.put(env+id, {
+            nip: nip,
+            nama: nama,
+            jabatan: jabatan
+        })
+        .then((response) => {
+            console.log('respon edit ', response);
+            this.componentDidMount()
+            alert('updated success')
+        })
+        .catch((err) => {
+            console.log('errr ', err);
+            alert('Uh Oh!.. Sorry Error.', err)
+        })
+
+    }
+
+    addKaryawan() {
+        axios.post('', {
+
+        })
+        .then((response) => {
+
+        })
+        .catch((err) => {
+            
+        })
+    }
+
+
     render() {
        
         if (this.state.isLoading) {
@@ -75,6 +116,9 @@ export default class AddKaryawan extends Component {
                                     Id: {rowData.id}
                                 </Text>
                                 <Text>
+                                    Nip: {rowData.nip}
+                                </Text>
+                                <Text>
                                     Nama: {rowData.nama}
                                 </Text>
                                 <Text style={{
@@ -86,7 +130,7 @@ export default class AddKaryawan extends Component {
                                 </Text>
                                 <TouchableHighlight
                                     style={styles.button}
-                                    onPress={() => {this.editKaryawan(rowData.id)}}
+                                    onPress={() => {this.show_editKaryawan(rowData.id, rowData.nip, rowData.nama, rowData.jabatan)}}
                                 >
                                     <Text style={{ margin: 5}}> Edit </Text>
                                 </TouchableHighlight>
@@ -105,13 +149,47 @@ export default class AddKaryawan extends Component {
                     >
                         <View style={{marginTop: 22}}>
                             <View>
-                                <Text>Hello World!</Text>
+                                <Text style={styles.welcome}>Edit Your Data Karyawan</Text>
+                                <View style={styles.frameEdit}>
+                                    <View style={styles.inFrameEdit}>
 
-                                <Button onPress={() => {
-                                    this.setModalVisible(!this.state.modalVisible)
-                                }}>
-                                    OK
-                                </Button>
+                                        <TextInput
+                                            style={styles.TextInput}
+                                            placeholder="nip.."
+                                            onChangeText={(nip) => this.setState({nip})}
+                                            value={this.state.nip}
+                                        />
+                                        <TextInput
+                                            style={styles.TextInput}
+                                            placeholder="nama.."
+                                            onChangeText={(nama) => this.setState({nama})}
+                                            value={this.state.nama}
+                                        />
+                                        <TextInput
+                                            style={styles.TextInput}
+                                            placeholder="jabatan.."
+                                            onChangeText={(jabatan) => this.setState({jabatan})}
+                                            value={this.state.jabatan}
+                                        />
+                                        <View style={styles.buttonEDIT}>
+                                            <TouchableHighlight style={styles.inFrameEditButton}
+                                                onPress={() => {
+                                                    this.editKaryawan(this.state.id, this.state.nip, this.state.nama, this.state.jabatan)
+                                                    this.setModalVisible(!this.state.modalVisible)
+                                                }}
+                                            >
+                                                <Text>EDIT</Text>
+                                            </TouchableHighlight>
+                                            <TouchableHighlight style={styles.inFrameEditButton}
+                                                onPress={() => {
+                                                    this.setModalVisible(!this.state.modalVisible)
+                                                }}
+                                            >
+                                                <Text>CANCEL</Text>
+                                            </TouchableHighlight>
+                                        </View>
+                                    </View>
+                                </View>
                             </View>
                         </View>
                     </Modal>
@@ -131,6 +209,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     textAlign: 'center',
     margin: 10,
+    marginBottom: 20,
   },
   instructions: {
     textAlign: 'center',
@@ -150,7 +229,7 @@ const styles = StyleSheet.create({
     borderLeftWidth: 1,
     borderColor: '#eaeaea',
     borderRadius: 5,
-},
+  },
   button: {
     alignItems: 'flex-end',
     backgroundColor: '#DDDDDD',
@@ -160,4 +239,31 @@ const styles = StyleSheet.create({
     marginBottom: 3,
     width: 50,
   },
+  frameEdit: {
+    padding: 20,
+  },
+  inFrameEdit: {
+    backgroundColor: '#f1f8ff',
+    padding: 10,
+    borderTopWidth: 1,
+    borderRightWidth: 1,
+    borderBottomWidth: 1,
+    borderLeftWidth: 1,
+    borderColor: '#eaeaea',
+    borderRadius: 5,
+  },
+  inFrameEditButton: {
+    flex: 1,
+    alignItems: 'flex-start',
+    alignSelf: 'auto',
+    
+},
+  buttonEDIT: {
+    flexDirection: 'row',
+    backgroundColor: '#eaeaea',
+    justifyContent: 'flex-start',
+    padding: 5,
+    margin: 15,
+    borderRadius: 5,
+  }
 });
