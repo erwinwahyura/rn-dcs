@@ -32,6 +32,13 @@ export default class DataAbsen extends Component {
             animating: true,
             dataNilaiAbsen: [],
             week: '',
+            dataCari: [],
+            flagDataCari: false,
+            flagProsesFuzzy: false,
+            flagListViewByWeek: false,
+            flagListViewHasil: false,
+            dataHasil: new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2}),
+            loadingFuzzy: false,
         }
     }
     
@@ -39,30 +46,27 @@ export default class DataAbsen extends Component {
         title: 'Input Nilai',
     };
 
-    componentWillMount() {
-        this.getNamaKaryawan();
+    componentDidMount() {
+        // var env = 'https://erwar.id/absens/api/detail';
+        // return fetch(env)
+        // .then((response) => response.json())
+        // .then((responseJson) => {
+        //     console.log('wow11: ',responseJson.data);
+        //     let ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
+        //     this.setState({
+        //         isLoading: false,
+        //         dataSource: ds.cloneWithRows(responseJson),
+        //         datas: [ ...responseJson.data]
+        //     });
+        // })
+        // .catch((error) => {
+        //     console.error('err : ',error);
+        // });
 
-        var env = 'https://erwar.id/absens/api/detail';
-        return fetch(env)
-        .then((response) => response.json())
-        .then((responseJson) => {
-            console.log('wow11: ',responseJson.data);
-            let ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
-            this.setState({
-                isLoading: false,
-                dataSource: ds.cloneWithRows(responseJson),
-                datas: [ ...responseJson.data]
-            });
-        })
-        .catch((error) => {
-            console.error('err : ',error);
-        });
-
-    }
-
-    componentWillMount() {
         this.getNamaKaryawan()
+
     }
+
     setModalAbsen(visible) {
         this.setState({modalAbsen: visible});
     }
@@ -83,6 +87,53 @@ export default class DataAbsen extends Component {
 
     addAbsen(data) {
         console.log('datasdsdsds : ;: ', data);
+    }
+
+    cariData(week, status) {
+        this.setState({flagListViewByWeek: status})
+        axios.post('https://erwar.id/proses/api/',{
+            week: week
+        })
+        .then((response) => {
+            console.log('data cari: ', response.data);
+            this.setState({dataCari: [...response.data]})
+            let ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
+            this.setState({
+                isLoading: false,
+                dataSource: ds.cloneWithRows(response.data),
+                flagDataCari: true,
+                flagListViewByWeek: true,
+            });
+        })
+        .catch((err) => {
+            console.log('err: ',err);
+            alert('Uh Oh error', err);
+        })
+    }
+
+    prosesFuzzy(week, statusFlagWeek) {
+        this.setState({flagListViewByWeek: false,loadingFuzzy: true})
+        axios.post('https://erwar.id/proses/api/fuzzy', {
+            week: week
+        })
+        .then((response) => {
+            console.log('proses fuzzynyaaa: ', response.data);
+            this.setState({dataCari: [...response.data]})
+            let ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
+            this.setState({
+                isLoading: false,
+                dataHasil: ds.cloneWithRows(response.data),
+                flagDataCari: false,
+                flagProsesFuzzy: true,
+                flagListViewByWeek: false,
+                flagListViewHasil: true,
+                loadingFuzzy: false,
+            });
+        })
+        .catch((err) => {
+            console.log('err: ',err);
+            alert('Uh Oh error', err);
+        })
     }
 
     render() {
@@ -129,7 +180,7 @@ export default class DataAbsen extends Component {
                 />
                 <TouchableOpacity
                     style={styles.buttonAddKaryawan}
-                    onPress={() => {this.cariData()}}
+                    onPress={() => {this.cariData(this.state.week.toLowerCase()), 'loading'}}
                 >
                     <Text style={styles.button}> Cari </Text>
                 </TouchableOpacity>
@@ -168,14 +219,22 @@ export default class DataAbsen extends Component {
                             </View>
                         </View>
                     </Modal>
-
+                    {/* LIST UNTUK GET DATA BY WEEK */}
+                {
+                    this.state.flagListViewByWeek === false ?
+                    null 
+                    :
+                    this.state.flagListViewByWeek === 'loading' ?
+                    <ActivityIndicator></ActivityIndicator>
+                    :
                 <ListView
                     dataSource={this.state.dataSource}
+                    enableEmptySections={true}
                     renderRow={(rowData) => 
                         <View>
                             <View style={styles.data}> 
                                 <Text>
-                                    Id: {rowData.ID}
+                                    Id: {rowData.id}
                                 </Text>
 
                                 <Text>
@@ -183,13 +242,104 @@ export default class DataAbsen extends Component {
                                 </Text>
 
                                 <Text>
-                                    Tanggal: {rowData.tgl}
+                                    Nilai Kehadiran: {rowData.total_kehadiran}
+                                </Text>
+
+                                <Text>
+                                    Nilai Kerapihan: {rowData.total_kerapihan}
+                                </Text>
+
+                                <Text>
+                                    Nilai Sikap: {rowData.total_sikap}
                                 </Text>
                                 
                             </View>
                         </View>
                     }
                 />
+                }
+                {
+                    this.state.loadingFuzzy === false ?
+                    null:
+                    <ActivityIndicator size="large" color="#0000ff" />
+                }
+
+                {/* LIST DATA UNTUK PROSES FUZZY! */}
+                {
+                    this.state.flagListViewHasil === false ?
+                    null
+                    :
+                    this.state.flagListViewHasil === 'loading' ?
+                    <ActivityIndicator size="large" color="#0000ff" />
+                    :
+                    <ListView
+                    dataSource={this.state.dataHasil}
+                    enableEmptySections={true}
+                    renderRow={(rowData) => 
+                        <View>
+                            <View style={styles.data}> 
+                                <Text>
+                                    Id: {rowData.id}
+                                </Text>
+
+                                <Text>
+                                    Nama: {rowData.nama}
+                                </Text>
+
+                                <Text>
+                                    Nilai Karyawan: {rowData.nilai_karywan.toString().substr(0,4)}
+                                </Text>
+
+                                <Text>
+                                    Keterangan: {rowData.keterangan}
+                                </Text>
+                            </View>
+                        </View>
+                    }
+                />
+                }
+             
+
+                {
+                    this.state.flagDataCari === false ?
+                    null
+                    :
+                    <Button
+                        style={{
+                            width: 60,  
+                            height: 60,   
+                            borderRadius: 30,            
+                            backgroundColor: '#ee6e73',                                    
+                            position: 'absolute',                                          
+                            bottom: 10,                                                    
+                            right: 10, 
+                        }}
+                        onPress={() => {this.prosesFuzzy(this.state.week), false}}
+                        title="Proses Fuzzy!"
+                    >
+                    </Button>
+                }
+
+                {
+                    this.state.flagProsesFuzzy === false ?
+                     null
+                     :
+                     <Button
+                         style={{
+                             width: 60,  
+                             height: 60,   
+                             borderRadius: 30,            
+                             backgroundColor: '#ee6e73',                                    
+                             position: 'absolute',                                          
+                             bottom: 10,                                                    
+                             right: 10, 
+                         }}
+                         onPress={() => {alert('data saved! check ur data on result master')}}
+                         title="Save Data!"
+                     >
+                     </Button>
+                }
+                
             </View>
         )
     }
