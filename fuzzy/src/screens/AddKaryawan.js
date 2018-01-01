@@ -88,6 +88,7 @@ export default class AddKaryawan extends Component {
     }
 
     addKaryawan(nip, nama, jabatan) {
+       
         var env = 'https://erwar.id/karyawans/api/';
         axios.post(env, {
             nip: nip,
@@ -147,7 +148,7 @@ export default class AddKaryawan extends Component {
                         animationType={"fade"}
                         transparent={false}
                         visible={this.state.modalAddKaryawan}
-                        onRequestClose={() => {alert("Modal has been closed.")}}
+                        onRequestClose={() => {this.setModalKaryawan(!this.state.modalAddKaryawan)}}
                     >
                         <View style={{marginTop: 22}}>
                             <View>
@@ -176,8 +177,16 @@ export default class AddKaryawan extends Component {
                                         <View style={styles.buttonEDIT}>
                                             <TouchableOpacity style={styles.inFrameEditButton}
                                                 onPress={() => {
-                                                    this.addKaryawan(this.state.nip, this.state.nama, this.state.jabatan)
-                                                    this.setModalKaryawan(!this.state.modalAddKaryawan)
+                                                    if (this.state.nip.trim() === '') {
+                                                        alert('Nip tidak boleh kosong!')
+                                                    } else if (this.state.nama.trim() === '') {
+                                                        alert('Nama tidak boleh kosong!')
+                                                    } else if (this.state.jabatan.trim() === '') {
+                                                        alert('Jabatan tidak boleh kosong!')
+                                                    } else {
+                                                        this.addKaryawan(this.state.nip, this.state.nama, this.state.jabatan)
+                                                        this.setModalKaryawan(!this.state.modalAddKaryawan)
+                                                    }
                                                 }}
                                             >
                                                 <Text>ADD</Text>
@@ -245,7 +254,7 @@ export default class AddKaryawan extends Component {
                         animationType={"fade"}
                         transparent={false}
                         visible={this.state.modalVisible}
-                        onRequestClose={() => {alert("Modal has been closed.")}}
+                        onRequestClose={() => {this.setModalVisible(!this.state.modalVisible)}}
                     >
                         <View style={{marginTop: 22}}>
                             <View>
