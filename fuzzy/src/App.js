@@ -12,7 +12,7 @@ import { TabNavigator } from 'react-navigation';
 
 import Login from './screens/Login';
 import Home from './screens/Home';
-import DataAbsen from './screens/DataAbsen';
+import InputNilai from './screens/InputNilai';
 import NilaiKaryawan from './screens/NilaiKaryawan';
 import AddKaryawan from './screens/AddKaryawan';
 import ProcessFuzzy from './screens/ProcessFuzzy';
@@ -21,8 +21,7 @@ const fuzzy = TabNavigator({
   // Login: { screen: Login },
   Home: { screen: Home },
   AddKaryawan: { screen: AddKaryawan},
-  DataAbsen: { screen: DataAbsen},
-  NilaiKaryawan: { screen: NilaiKaryawan},
+  InputNilai: { screen: InputNilai},
   ProcessFuzzy: { screen: ProcessFuzzy},
 });
 
