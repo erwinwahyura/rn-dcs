@@ -27,16 +27,25 @@ export default class Home extends Component {
                 <Text 
                     style={styles.welcome}
                 >
-                    Applikasi Fuzzy (judul skripsi)
+                    Aplikasi Penilaian Kinerja Pegawai
+                </Text>
+                <Text>
+                    Menggunakan Fuzzy Inference System 
+                </Text>
+                <Text>
+                    Dengan Metode Tsukamoto
+                </Text>
+                <Text>
+                    Berbasis Mobile
                 </Text>
                 <Image 
                     source={require('../img/logo.jpg')}
-                    style={{width: 250, height: 200, resizeMode: Image.resizeMode.contain,}}
+                    style={{width: 250, height: 200, resizeMode: Image.resizeMode.contain, borderRadius: 40}}
                 />
                 <Text 
                     style={styles.welcome}
                 >
-                    Jln. Bintaro Jaya kel287:20
+                    Kantor Serketariat DRPD Kota Tangerang Selatan
                 </Text>
             </View>
         )
