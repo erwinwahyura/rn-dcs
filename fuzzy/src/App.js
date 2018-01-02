@@ -15,14 +15,14 @@ import Home from './screens/Home';
 import InputNilai from './screens/InputNilai';
 import NilaiKaryawan from './screens/NilaiKaryawan';
 import AddKaryawan from './screens/AddKaryawan';
-import ProcessFuzzy from './screens/ProcessFuzzy';
+import Report from './screens/Report';
 
 const fuzzy = TabNavigator({
   // Login: { screen: Login },
   Home: { screen: Home },
   AddKaryawan: { screen: AddKaryawan},
   InputNilai: { screen: InputNilai},
-  ProcessFuzzy: { screen: ProcessFuzzy},
+  Report: { screen: Report},
 });
 
 AppRegistry.registerComponent('fuzzy', () => fuzzy);

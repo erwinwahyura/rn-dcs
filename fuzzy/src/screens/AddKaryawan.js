@@ -205,10 +205,10 @@ export default class AddKaryawan extends Component {
                         </View>
                     </Modal>
                     {/* ------------------------------------------ */}
-                <ListView
+                <ListView 
                     dataSource={this.state.dataSource}
                     renderRow={(rowData) => 
-                        <View>
+                        <View style={styles.data}>
                             <View style={styles.data}> 
                                 <Text>
                                     Id: {rowData.id}
@@ -337,7 +337,6 @@ const styles = StyleSheet.create({
     borderRightWidth: 1,
     borderBottomWidth: 1,
     borderLeftWidth: 1,
-    borderColor: '#eaeaea',
     borderRadius: 5,
   },
   button: {

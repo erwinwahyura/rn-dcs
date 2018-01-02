@@ -18,7 +18,7 @@ import {
 import axios from 'axios';
 
 
-export default class DataAbsen extends Component {
+export default class InputNilai extends Component {
     constructor() {
         super()
         this.state = {
@@ -29,7 +29,6 @@ export default class DataAbsen extends Component {
             dataKaryawan: {},
             namaCurrent: '',
             selectedName: 'pilih nama',
-            animating: true,
             dataNilaiAbsen: [],
             week: '',
             dataCari: [],
@@ -39,6 +38,7 @@ export default class DataAbsen extends Component {
             flagListViewHasil: false,
             dataHasil: new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2}),
             loadingFuzzy: false,
+            Result: {},
         }
     }
     
@@ -112,9 +112,9 @@ export default class DataAbsen extends Component {
     }
 
     prosesFuzzy(week, statusFlagWeek) {
-        this.setState({flagListViewByWeek: false,loadingFuzzy: true})
+        this.setState({flagListViewByWeek: false,loadingFuzzy: true, flagListViewHasil: true})
         axios.post('https://erwar.id/proses/api/fuzzy', {
-            week: week
+            week: week.toLowerCase()
         })
         .then((response) => {
             console.log('proses fuzzynyaaa: ', response.data);
@@ -128,6 +128,7 @@ export default class DataAbsen extends Component {
                 flagListViewByWeek: false,
                 flagListViewHasil: true,
                 loadingFuzzy: false,
+                Result: [...response.data],
             });
         })
         .catch((err) => {
@@ -136,8 +137,42 @@ export default class DataAbsen extends Component {
         })
     }
 
+    bulkInsert(obj) {
+        console.log('ini obj save data: ', obj);
+        var parsingData = [];
+        for (var i =0 ;i<obj.length; i++) {
+            var temp = {
+                'id_absen': obj[i].id,
+                'nilai': obj[i].nilai_karywan,
+                'tag': this.state.week.toLowerCase(),
+                'keterangan': obj[i].keterangan,
+                'createdAt': new Date(),
+                'updatedAt': new Date()
+            }
+        parsingData.push(temp)
+        }
+
+        console.log('parsingdata baru: ', parsingData)
+
+        axios.post('https://erwar.id/proses/api/save', {
+            datas: parsingData
+        })
+        .then((response) => {
+            this.setState({
+                flagListViewHasil: false,
+                flagProsesFuzzy: false,
+            })
+            console.log('data simpan hasil fuzzy  : ', response);
+            alert('data berhasil di simpan')
+            
+        })
+        .catch((err) => {
+            console.log('err: ',err);
+            alert('Uh Oh error', err);
+        })
+    }
+
     render() {
-        const animating = this.state.animating
 
         // {this.state.dataKaryawan}
         // let namaItems = setTimeout(() => {
@@ -334,7 +369,7 @@ export default class DataAbsen extends Component {
                              bottom: 10,                                                    
                              right: 10, 
                          }}
-                         onPress={() => {alert('data saved! check ur data on result master')}}
+                         onPress={() => {this.bulkInsert(this.state.Result)}}
                          title="Save Data!"
                      >
                      </Button>
