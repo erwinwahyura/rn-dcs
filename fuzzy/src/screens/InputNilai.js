@@ -39,6 +39,7 @@ export default class InputNilai extends Component {
             dataHasil: new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2}),
             loadingFuzzy: false,
             Result: {},
+            durasiProses: 0,
         }
     }
     
@@ -47,21 +48,6 @@ export default class InputNilai extends Component {
     };
 
     componentDidMount() {
-        // var env = 'https://erwar.id/absens/api/detail';
-        // return fetch(env)
-        // .then((response) => response.json())
-        // .then((responseJson) => {
-        //     console.log('wow11: ',responseJson.data);
-        //     let ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
-        //     this.setState({
-        //         isLoading: false,
-        //         dataSource: ds.cloneWithRows(responseJson),
-        //         datas: [ ...responseJson.data]
-        //     });
-        // })
-        // .catch((error) => {
-        //     console.error('err : ',error);
-        // });
 
         this.getNamaKaryawan()
 
@@ -90,7 +76,7 @@ export default class InputNilai extends Component {
     }
 
     cariData(week, status) {
-        this.setState({flagListViewByWeek: status})
+        this.setState({flagListViewByWeek: status, flagProsesFuzzy: false, flagProsesFuzzy: false, flagListViewHasil: false })
         axios.post('https://erwar.id/proses/api/',{
             week: week
         })
@@ -112,6 +98,7 @@ export default class InputNilai extends Component {
     }
 
     prosesFuzzy(week, statusFlagWeek) {
+        var t1 = performance.now();
         this.setState({flagListViewByWeek: false,loadingFuzzy: true, flagListViewHasil: true})
         axios.post('https://erwar.id/proses/api/fuzzy', {
             week: week.toLowerCase()
@@ -120,6 +107,8 @@ export default class InputNilai extends Component {
             console.log('proses fuzzynyaaa: ', response.data);
             this.setState({dataCari: [...response.data]})
             let ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
+            var t2 = performance.now()
+            var hasil = ((t2-t1)/1000) // detik
             this.setState({
                 isLoading: false,
                 dataHasil: ds.cloneWithRows(response.data),
@@ -129,12 +118,15 @@ export default class InputNilai extends Component {
                 flagListViewHasil: true,
                 loadingFuzzy: false,
                 Result: [...response.data],
+                durasiProses: hasil,
             });
+            alert('proses generate nilai berhasil, \n waktu yang di perlukan selama '+this.state.durasiProses.toString().substr(0,5)+' detik.')
         })
         .catch((err) => {
             console.log('err: ',err);
             alert('Uh Oh error', err);
         })
+        
     }
 
     bulkInsert(obj) {
@@ -153,23 +145,93 @@ export default class InputNilai extends Component {
         }
 
         console.log('parsingdata baru: ', parsingData)
+        // var dataForCheck = 0;
+        // axios.post('https://erwar.id/nilais/api/week', {
+        //     week: this.state.week.toLowerCase()
+        // })
+        // .then((res) => {
+        //     dataForCheck = res.data.length;
+        //     console.log('data for cek nya : ', dataForCheck);
+        // })
+        // .catch((err) => console.log('err unable to check! ', err))
 
-        axios.post('https://erwar.id/proses/api/save', {
-            datas: parsingData
-        })
-        .then((response) => {
-            this.setState({
-                flagListViewHasil: false,
-                flagProsesFuzzy: false,
+        // console.log('kena asnyc');
+        // if (dataForCheck === 0) {
+        //     axios.post('https://erwar.id/proses/api/save', {
+        //         datas: parsingData
+        //     })
+        //     .then((response) => {
+        //         this.setState({
+        //             flagListViewHasil: false,
+        //             flagProsesFuzzy: false,
+        //         })
+        //         console.log('data simpan hasil fuzzy  : ', response);
+        //         alert('data berhasil di simpan');
+                
+        //     })
+        //     .catch((err) => {
+        //         console.log('err: ',err);
+        //         alert('Uh Oh error', err);
+        //     })
+        // } else {
+        //     alert('data ini sudah tersimpan!')
+        // }
+
+
+
+
+        //move to promise chainning
+        let checker = this.state.week
+        let getChecker = (param) => {
+            console.log('ini paramnya pastikan isi benar !!', param);
+            return new Promise((resolve, reject) => {
+                let data = axios.post('https://erwar.id/nilais/api/week', {
+                    week: param.toLowerCase()
+                })
+                console.log('ini datanyaaa cek lengnyaaa ', data);
+                resolve(data);
+                reject(err)
             })
-            console.log('data simpan hasil fuzzy  : ', response);
-            alert('data berhasil di simpan')
-            
+        }
+
+        let saveData = (param, res) => {
+            console.log('cekk k k ',res);
+            if (res.data.length === 0 ) {
+                console.log('masuk sini leng 0');
+                return new Promise ((resolve, reject) => {
+                    let data = axios.post('https://erwar.id/proses/api/save', {
+                        datas: param
+                    })
+                    resolve(data)
+                    reject(err)
+                })
+            } else {
+                console.log('masuk sini leng 1');
+                return new Promise ((resolve, reject) => {
+                    let data = 'sudah ada'
+                    resolve(data)
+                    reject(err)
+                })
+            }
+        }
+
+        getChecker(checker)
+        .then((response) => {
+            console.log('ini RESPONSEEEE ', response)
+            return saveData(parsingData, response)
+        })
+        .then((result) => {
+            console.log('data setelah jalanin save Data: ',result);
+            if (result === 'sudah ada') {
+                alert('Data sudah ada tidak perlu di simpan!')
+            } else {
+                alert('Data berhasil di simpan!')
+            }
         })
         .catch((err) => {
-            console.log('err: ',err);
-            alert('Uh Oh error', err);
+            alert('Uh.. Oh.. Sorry Error!')
         })
+
     }
 
     render() {
