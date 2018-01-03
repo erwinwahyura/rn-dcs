@@ -26,7 +26,7 @@ export default class InputNilai extends Component {
             isloading: true,
             dataSource: new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2}),
             modalAbsen: false,
-            dataKaryawan: {},
+            dataKaryawan: [],
             namaCurrent: '',
             selectedName: 'pilih nama',
             dataNilaiAbsen: [],
@@ -40,7 +40,16 @@ export default class InputNilai extends Component {
             loadingFuzzy: false,
             Result: {},
             durasiProses: 0,
+            dataInput: {
+                id: 0,
+                kehadiran: 0,
+                kerapihan: 0,
+                sikap: 0,
+                weekInput: 0,
+            },
         }
+
+        datak = []
     }
     
     static navigationOptions = {
@@ -65,6 +74,7 @@ export default class InputNilai extends Component {
                 this.setState({dataKaryawan: [...response.data]})
             }, 3000)
             
+            datak = [...response.data]
         })
         .catch((err) => {
             console.log('Uh Oh error', err);
@@ -145,41 +155,6 @@ export default class InputNilai extends Component {
         }
 
         console.log('parsingdata baru: ', parsingData)
-        // var dataForCheck = 0;
-        // axios.post('https://erwar.id/nilais/api/week', {
-        //     week: this.state.week.toLowerCase()
-        // })
-        // .then((res) => {
-        //     dataForCheck = res.data.length;
-        //     console.log('data for cek nya : ', dataForCheck);
-        // })
-        // .catch((err) => console.log('err unable to check! ', err))
-
-        // console.log('kena asnyc');
-        // if (dataForCheck === 0) {
-        //     axios.post('https://erwar.id/proses/api/save', {
-        //         datas: parsingData
-        //     })
-        //     .then((response) => {
-        //         this.setState({
-        //             flagListViewHasil: false,
-        //             flagProsesFuzzy: false,
-        //         })
-        //         console.log('data simpan hasil fuzzy  : ', response);
-        //         alert('data berhasil di simpan');
-                
-        //     })
-        //     .catch((err) => {
-        //         console.log('err: ',err);
-        //         alert('Uh Oh error', err);
-        //     })
-        // } else {
-        //     alert('data ini sudah tersimpan!')
-        // }
-
-
-
-
         //move to promise chainning
         let checker = this.state.week
         let getChecker = (param) => {
@@ -232,6 +207,15 @@ export default class InputNilai extends Component {
             alert('Uh.. Oh.. Sorry Error!')
         })
 
+        
+
+    }
+    renderPicker() {
+        var items = [];
+        console.log('data karyawan', datak);
+        for (let item of datak) {
+            items.push(<Picker.item key={item} label={item} value={item} ></Picker.item>)
+        }
     }
 
     render() {
@@ -286,13 +270,43 @@ export default class InputNilai extends Component {
                         animationType={"fade"}
                         transparent={false}
                         visible={this.state.modalAbsen}
-                        onRequestClose={() => {alert("Modal has been closed.")}}
+                        onRequestClose={() => {this.setModalAbsen(!this.state.modalAbsen)}}
                     >
                         <View style={{marginTop: 22}}>
                             <View>
-                                <Text style={styles.welcome}>Add Data Karyawan</Text>
+                                <Text style={styles.welcome}>Input Nilai Karyawan</Text>
                                 <View style={styles.frameEdit}>
                                     <View style={styles.inFrameEdit}>
+                                    
+                                        <Picker
+                                            selectedValue={this.state.selectedName}
+                                            onValueChange={(itemValue) => this.setState({selectedName: itemValue})}>
+                                            {datak.map(v =>  <Picker.Item key={v.id} label={v.nama} value={v.id} />) }
+                                        </Picker>
+                                        <TextInput
+                                            style={styles.TextInput}
+                                            placeholder="nilai kehadiran.."
+                                            onChangeText={(kehadiran) => this.setState({kehadiran})}
+                                            value={this.state.kehadiran}
+                                        />
+                                        <TextInput
+                                            style={styles.TextInput}
+                                            placeholder="nilai kerapihan.."
+                                            onChangeText={(kerapihan) => this.setState({kerapihan})}
+                                            value={this.state.kerapihan}
+                                        />
+                                        <TextInput
+                                            style={styles.TextInput}
+                                            placeholder="nilai sikap.."
+                                            onChangeText={(sikap) => this.setState({sikap})}
+                                            value={this.state.sikap}
+                                        />
+                                        <TextInput
+                                            style={styles.TextInput}
+                                            placeholder="week ke berapa.."
+                                            onChangeText={(weekInput) => this.setState({weekInput})}
+                                            value={this.state.weekInput}
+                                        />
 
                                         <View style={styles.buttonEDIT}>
                                             <TouchableOpacity style={styles.inFrameEditButton}
