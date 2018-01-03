@@ -43,25 +43,27 @@ export default class Report extends Component {
                 alert('Uh Oh Sorry Error!');
             })
         } else if (obj.toLowerCase().substr(0,4) === 'week') {
+            this.setState({flagText: false, })
             console.log('masuk ke pencarian week');
             axios.post('https://erwar.id/nilais/api/week', {
-                week: obj
+                week: obj.toLowerCase()
             })
             .then((response) => {
                 console.log('hai ', response.data);
-                this.setState({dataSource: ds.cloneWithRows(response.data)})
+                this.setState({dataSource: ds.cloneWithRows(response.data), flagText: true, })
             })
             .catch((err) => {
                 console.log('err',err);
                 alert('Uh Oh Sorry Error!');
             })
         } else {
+            this.setState({flagText: false, })
             axios.post('https://erwar.id/nilais/api/nama', {
                 nama: obj
             })
             .then((response) => {
                 console.log('hai ', response.data);
-                this.setState({dataSource: ds.cloneWithRows(response.data)})
+                this.setState({dataSource: ds.cloneWithRows(response.data), flagText: true, })
             })
             .catch((err) => {
                 console.log('err',err);
