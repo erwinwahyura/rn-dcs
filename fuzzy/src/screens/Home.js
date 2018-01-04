@@ -29,15 +29,7 @@ export default class Home extends Component {
                 >
                     Aplikasi Penilaian Kinerja Pegawai
                 </Text>
-                <Text>
-                    Menggunakan Fuzzy Inference System 
-                </Text>
-                <Text>
-                    Dengan Metode Tsukamoto
-                </Text>
-                <Text>
-                    Berbasis Mobile
-                </Text>
+               
                 <Image 
                     source={require('../img/logo.jpg')}
                     style={{width: 250, height: 200, resizeMode: Image.resizeMode.contain, borderRadius: 40}}
@@ -59,7 +51,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5FCFF',
   },
   welcome: {
-    fontSize: 20,
+    fontSize: 30,
     textAlign: 'center',
     margin: 10,
   },

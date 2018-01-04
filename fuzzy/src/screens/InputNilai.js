@@ -28,8 +28,7 @@ export default class InputNilai extends Component {
             modalAbsen: false,
             dataKaryawan: [],
             namaCurrent: '',
-            selectedName: 'pilih nama',
-            dataNilaiAbsen: [],
+            dataNilaiAbsen: [], 
             week: '',
             dataCari: [],
             flagDataCari: false,
@@ -40,13 +39,17 @@ export default class InputNilai extends Component {
             loadingFuzzy: false,
             Result: {},
             durasiProses: 0,
+            selectedName: 1,
             dataInput: {
-                id: 0,
                 kehadiran: 0,
                 kerapihan: 0,
                 sikap: 0,
                 weekInput: 0,
             },
+            dataTunggal: [],
+            dataProsesTunggal: new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2}),
+            flagTunggal: false,
+            flagViewTunggal: false,
         }
 
         datak = []
@@ -56,18 +59,13 @@ export default class InputNilai extends Component {
         title: 'Input Nilai',
     };
 
-    componentDidMount() {
-
-        this.getNamaKaryawan()
-
-    }
-
+    
     setModalAbsen(visible) {
         this.setState({modalAbsen: visible});
     }
-
+    
     getNamaKaryawan() {
-        axios.get('https://erwar.id/karyawans/api/')
+        axios.get('https://erwar.id/absens/api/detail')
         .then((response) => {
             console.log('response nama karyawan: ', response.data);
             setTimeout(() =>  { 
@@ -79,12 +77,37 @@ export default class InputNilai extends Component {
         .catch((err) => {
             console.log('Uh Oh error', err);
         })
-    }
 
-    addAbsen(data) {
-        console.log('datasdsdsds : ;: ', data);
+       
     }
-
+    
+    addAbsen(id, kehadiran, kerapihan, sikap, week, status) {
+        if (kehadiran >10 || kehadiran <0) {
+            alert('Nilai Kehadiran 0-10!');
+        } else if (kerapihan >5 || kerapihan <0) {
+            alert('Nilai Kerapihan 0-5!')
+        } else if (sikap >5 || sikap <0) {
+            alert('Nilai Sikap 0-5!')
+        } else {
+            axios.post('https://erwar.id/penilaians/api/', {
+                id_absen: id,
+                kehadiran: kehadiran,
+                kerapihan: kerapihan,
+                sikap: sikap,
+                tag: week.toLowerCase().trim().split(' ').join('')
+            })
+            .then((response) => {
+                console.log('sukses create penilaians ',response);
+                alert('Sucess!')
+                this.setState({flagViewTunggal: status})
+            })
+            .catch((err) => {
+                console.log('err', err);
+                alert('Failed!')
+            })
+        }
+    }
+    
     cariData(week, status) {
         this.setState({flagListViewByWeek: status, flagProsesFuzzy: false, flagProsesFuzzy: false, flagListViewHasil: false })
         axios.post('https://erwar.id/proses/api/',{
@@ -108,16 +131,17 @@ export default class InputNilai extends Component {
     }
 
     prosesFuzzy(week, statusFlagWeek) {
-        var t1 = performance.now();
+        var t1 = Date.now();
         this.setState({flagListViewByWeek: false,loadingFuzzy: true, flagListViewHasil: true})
         axios.post('https://erwar.id/proses/api/fuzzy', {
             week: week.toLowerCase()
         })
         .then((response) => {
-            console.log('proses fuzzynyaaa: ', response.data);
+            console.log('proses fuzzynyaaa: ', response.data)
+            console.log('lengtnya : ',response.data.length);
             this.setState({dataCari: [...response.data]})
             let ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
-            var t2 = performance.now()
+            var t2 = Date.now()
             var hasil = ((t2-t1)/1000) // detik
             this.setState({
                 isLoading: false,
@@ -130,7 +154,23 @@ export default class InputNilai extends Component {
                 Result: [...response.data],
                 durasiProses: hasil,
             });
-            alert('proses generate nilai berhasil, \n waktu yang di perlukan selama '+this.state.durasiProses.toString().substr(0,5)+' detik.')
+            var baik = 0;
+            var buruk = 0;
+            response.data.map(x => {
+                if (x.keterangan === 'baik') {
+                    baik++
+                } else {
+                    buruk++
+                }
+            })
+
+            console.log('cek buruk: ',buruk)
+            console.log('cek baik :', baik);
+            alert(`proses generate nilai berhasil,
+                \n waktu yang di perlukan selama ${this.state.durasiProses.toString().substr(0,5)} detik.
+                \n Hasil Penialaian Baik : ${baik}
+                \n Hasil Penilaian Buruk : ${buruk}
+            `)
         })
         .catch((err) => {
             console.log('err: ',err);
@@ -206,34 +246,73 @@ export default class InputNilai extends Component {
         .catch((err) => {
             alert('Uh.. Oh.. Sorry Error!')
         })
+    }
 
+    getDataTunggal(id, week, status) {
+        console.log(typeof id, week)
+        axios.post('https://erwar.id/proses/api/tunggal',{
+            id_karyawan: Number(id),
+            week: week.toLowerCase()
+        })
+        .then((response) => {
+            console.log('data cari tunggal: ', response.data);
+            this.setState({dataTunggal: [...response.data]})
+            let ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
+            this.setState({
+                dataProsesTunggal: ds.cloneWithRows(response.data),
+                flagTunggal: status,
+                flagViewTunggal: status
+            });
+        })
+        .catch((err) => {
+            console.log('err: ',err);
+            alert('Uh Oh error', err);
+        })
         
-
     }
-    renderPicker() {
-        var items = [];
-        console.log('data karyawan', datak);
-        for (let item of datak) {
-            items.push(<Picker.item key={item} label={item} value={item} ></Picker.item>)
-        }
+    componentDidMount() {
+        this.getNamaKaryawan()
     }
 
-    render() {
+    ProsesTunggal(id, week) {
+        console.log('id ',id, 'weeknya ', week )
+        var t1 = Date.now();
+        axios.post('https://erwar.id/proses/api/fuzzytunggal', {
+            id_karyawan: Number(id),
+            week: week.toLowerCase()
+        })
+        .then((response) => {
+            console.log('proses fuzzynyaaa: ', response.data)
+            
+            var t2 = Date.now()
+            var hasil = ((t2-t1)/1000) // detik
+            
+            var baik = 0;
+            var buruk = 0;
+            response.data.map(x => {
+                if (x.keterangan === 'baik') {
+                    baik++
+                } else {
+                    buruk++
+                }
+            })
 
-        // {this.state.dataKaryawan}
-        // let namaItems = setTimeout(() => {
-        //     this.state.dataKaryawan.map((s, i) => {
-        //         return <Picker.Item key={i} value={s} label={i} />
-        //     });
-        // }, 10000)
-
-        // const namaItems = []; 
-        // for (var i = 0; i < this.state.datas.length; i++) {
-        //      var s = this.state.datas[i]; 
-        //      namaItems.push(<Picker.Item key={i} value={s} label={s} />); 
-        // }
-        // console.log('masuk? ', namaItems);
+            console.log('cek buruk: ',buruk)
+            console.log('cek baik :', baik);
+            alert(`
+                \n waktu yang di perlukan selama ${hasil.toString().substr(0,5)}  detik.
+                \n Nilai karyawan ${response.data[0].nilai_karywan.toString().substr(0,4)}
+                \n keterangan Nilai : ${response.data[0].keterangan}
+            `)
+            this.setState({flagTunggal: false, flagViewTunggal: false})
+        })
+        .catch((err) => {
+            console.log('err: ',err);
+            alert('Uh Oh error', err);
+        })
+    }
     
+    render() {
 
         if (this.state.isLoading) {
             return (
@@ -280,24 +359,32 @@ export default class InputNilai extends Component {
                                     
                                         <Picker
                                             selectedValue={this.state.selectedName}
-                                            onValueChange={(itemValue) => this.setState({selectedName: itemValue})}>
-                                            {datak.map(v =>  <Picker.Item key={v.id} label={v.nama} value={v.id} />) }
+                                            onValueChange={(v) => this.setState({selectedName: v})}>
+                                            {
+                                                datak.map(v =>  <Picker.Item key={v.ID} label={v.nama} value={v.ID} />) 
+                                            }
                                         </Picker>
                                         <TextInput
                                             style={styles.TextInput}
-                                            placeholder="nilai kehadiran.."
+                                            keyboardType ='numeric'
+                                            maxLength={2}
+                                            placeholder="nilai kehadiran.. (1-10)"
                                             onChangeText={(kehadiran) => this.setState({kehadiran})}
                                             value={this.state.kehadiran}
                                         />
                                         <TextInput
                                             style={styles.TextInput}
-                                            placeholder="nilai kerapihan.."
+                                            keyboardType ='numeric'
+                                            maxLength={1}
+                                            placeholder="nilai kerapihan.. (1-5)"
                                             onChangeText={(kerapihan) => this.setState({kerapihan})}
                                             value={this.state.kerapihan}
                                         />
                                         <TextInput
                                             style={styles.TextInput}
-                                            placeholder="nilai sikap.."
+                                            maxLength={1}
+                                            keyboardType ='numeric'
+                                            placeholder="nilai sikap.. (1-5)"
                                             onChangeText={(sikap) => this.setState({sikap})}
                                             value={this.state.sikap}
                                         />
@@ -311,10 +398,14 @@ export default class InputNilai extends Component {
                                         <View style={styles.buttonEDIT}>
                                             <TouchableOpacity style={styles.inFrameEditButton}
                                                 onPress={() => {
-                                                    this.addAbsen(this.state.namaCurrent)
-                                                    this.setModalAbsen(!this.state.modalAbsen)
+                                                    console.log('id: ',this.state.selectedName, 'kehadiran:',this.state.kehadiran, this.state.kerapihan, this.state.sikap, this.state.weekInput)
+                                                    this.addAbsen(this.state.selectedName, this.state.kehadiran, this.state.kerapihan, this.state.sikap, this.state.weekInput, true)
+                                                    // this.setModalAbsen(!this.state.modalAbsen)
+                                                    this.getDataTunggal(this.state.selectedName, this.state.weekInput, true)
+                                                    
                                                 }}
                                             >
+                                             
                                                 <Text>ADD</Text>
                                             </TouchableOpacity>
                                             <TouchableOpacity style={styles.inFrameEditButton}
@@ -325,6 +416,63 @@ export default class InputNilai extends Component {
                                                 <Text>CANCEL</Text>
                                             </TouchableOpacity>
                                         </View>
+                                        
+                                        {/* ======== ADD PROSES FUZZY TUNGGAL ========= */}
+                                        {
+                                            this.state.flagViewTunggal === false ? null :
+                                            <ListView
+                                            dataSource={this.state.dataProsesTunggal}
+                                            enableEmptySections={true}
+                                            renderRow={(rowData) => 
+                                                <View>
+                                                    <View style={styles.data}> 
+                                                        <Text>
+                                                            Id: {rowData.id}
+                                                        </Text>
+
+                                                        <Text>
+                                                            Nama: {rowData.nama}
+                                                        </Text>
+
+                                                        <Text>
+                                                            Nilai Kehadiran: {rowData.total_kehadiran}
+                                                        </Text>
+
+                                                        <Text>
+                                                            Nilai Kerapihan: {rowData.total_kerapihan}
+                                                        </Text>
+
+                                                        <Text>
+                                                            Nilai Sikap: {rowData.total_sikap}
+                                                        </Text>
+                                                        
+                                                    </View> 
+                                                    
+                                                </View>
+                                            }
+                                        />
+                                        }
+                                        
+                                      
+                                        {
+                                            this.state.flagTunggal === false ? null :
+                                            <Button
+                                            style={{
+                                                width: 60,  
+                                                height: 60,   
+                                                borderRadius: 30,            
+                                                backgroundColor: '#ee6e73',                                    
+                                                position: 'absolute',                                          
+                                                bottom: 10,                                                    
+                                                right: 10, 
+                                            }}
+                                            onPress={() => {this.ProsesTunggal(this.state.selectedName, this.state.weekInput)}}
+                                            title="Proses Fuzzy!"
+                                        >
+                                        </Button>
+                                        }
+
+                                        {/* ========== END ========== */}
                                     </View>
                                 </View>
                             </View>
