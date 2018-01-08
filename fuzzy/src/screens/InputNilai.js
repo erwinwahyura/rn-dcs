@@ -62,10 +62,13 @@ export default class InputNilai extends Component {
     
     setModalAbsen(visible) {
         this.setState({modalAbsen: visible});
+        this.getNamaKaryawan()
+        this.AbsenIdKaryawan()
     }
     
     getNamaKaryawan() {
         axios.get('https://erwar.id/absens/api/detail')
+        // axios.get('https://erwar.id/karyawans/api/')
         .then((response) => {
             console.log('response nama karyawan: ', response.data);
             setTimeout(() =>  { 
@@ -88,6 +91,8 @@ export default class InputNilai extends Component {
             alert('Nilai Kerapihan 0-5!')
         } else if (sikap >5 || sikap <0) {
             alert('Nilai Sikap 0-5!')
+        } else if (week === '') {
+            alert('week harus di isi (ex: week1.. ')
         } else {
             axios.post('https://erwar.id/penilaians/api/', {
                 id_absen: id,
@@ -249,29 +254,34 @@ export default class InputNilai extends Component {
     }
 
     getDataTunggal(id, week, status) {
-        console.log(typeof id, week)
-        axios.post('https://erwar.id/proses/api/tunggal',{
-            id_karyawan: Number(id),
-            week: week.toLowerCase()
-        })
-        .then((response) => {
-            console.log('data cari tunggal: ', response.data);
-            this.setState({dataTunggal: [...response.data]})
-            let ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
-            this.setState({
-                dataProsesTunggal: ds.cloneWithRows(response.data),
-                flagTunggal: status,
-                flagViewTunggal: status
-            });
-        })
-        .catch((err) => {
-            console.log('err: ',err);
-            alert('Uh Oh error', err);
-        })
+        if (week === '') {
+            alert('week tidak boleh kosong! (ex: week1..)')
+        } else {
+            console.log(typeof id, week)
+            axios.post('https://erwar.id/proses/api/tunggal',{
+                id_karyawan: Number(id),
+                week: week.toLowerCase()
+            })
+            .then((response) => {
+                console.log('data cari tunggal: ', response.data);
+                this.setState({dataTunggal: [...response.data]})
+                let ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
+                this.setState({
+                    dataProsesTunggal: ds.cloneWithRows(response.data),
+                    flagTunggal: status,
+                    flagViewTunggal: status
+                });
+            })
+            .catch((err) => {
+                console.log('err: ',err);
+                alert('Uh Oh error', err);
+            })
+        }
         
     }
     componentDidMount() {
         this.getNamaKaryawan()
+        // this.AbsenIdKaryawan()
     }
 
     ProsesTunggal(id, week) {
@@ -311,6 +321,58 @@ export default class InputNilai extends Component {
             alert('Uh Oh error', err);
         })
     }
+
+    AbsenIdKaryawan () {
+        var arrA = [];
+        var arrk = [];
+        var different = [];
+        axios.get('https://erwar.id/karyawans/api')
+        .then((response) => {
+            // arrA = [...response.data];
+            var temp = response.data
+            console.log(response.data);
+            // console.log(datak[0].ID);
+            for(var l =0; l<datak.length; l++) {
+                arrk.push(datak[l].id_karyawan)
+            }
+
+            for (var k=0; k<temp.length; k++) {
+                arrA.push(temp[k].id)
+            }
+
+            arrk.sort(function(a,b) {return a-b})
+            arrA.sort(function(a,b) {return a-b})
+            console.log('array ke k - ', arrk);
+            console.log('array ke A - ', arrA);
+            for (var i = 0; i<arrA.length; i++) {
+                if (arrk[i] !== arrA[i]) {
+                    different.push(arrA[i])
+                }
+            }
+            console.log('data different ', different)
+            if (different[0] !== undefined) {
+                different.map(x=> {
+                    axios.post('https://erwar.id/absens/api', {
+                        id_karyawan: x
+                    })
+                    .then((response) => {
+                        console.log('sukses add data absens', response.data);
+                        // this.componentDidMount();
+                        this.getNamaKaryawan()
+                    })
+                    .catch((err) => {
+                        console.log(err, 'err add data absens');
+                    })
+                })
+            }
+        })
+        .catch((err) => {
+            console.log(err, 'err absenidKaryawan');
+        })
+
+
+        
+    }
     
     render() {
 
@@ -327,7 +389,10 @@ export default class InputNilai extends Component {
 
                 <TouchableOpacity
                     style={styles.buttonAddKaryawan}
-                    onPress={() => {this.setModalAbsen(true)}}
+                    onPress={() => {
+                        this.setModalAbsen(true)
+
+                    }}
                 >
                     <Text style={styles.button}> Input Nilai </Text>
                 </TouchableOpacity>
