@@ -102,9 +102,11 @@ export default class InputNilai extends Component {
                 tag: week.toLowerCase().trim().split(' ').join('')
             })
             .then((response) => {
+                
                 console.log('sukses create penilaians ',response);
                 alert('Sucess!')
-                this.setState({flagViewTunggal: status})
+                this.setState({flagViewTunggal: true})
+                this.getDataTunggal(this.state.selectedName, this.state.weekInput, true)
             })
             .catch((err) => {
                 console.log('err', err);
@@ -254,34 +256,29 @@ export default class InputNilai extends Component {
     }
 
     getDataTunggal(id, week, status) {
-        if (week === '') {
-            alert('week tidak boleh kosong! (ex: week1..)')
-        } else {
-            console.log(typeof id, week)
-            axios.post('https://erwar.id/proses/api/tunggal',{
-                id_karyawan: Number(id),
-                week: week.toLowerCase()
-            })
-            .then((response) => {
-                console.log('data cari tunggal: ', response.data);
-                this.setState({dataTunggal: [...response.data]})
-                let ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
-                this.setState({
-                    dataProsesTunggal: ds.cloneWithRows(response.data),
-                    flagTunggal: status,
-                    flagViewTunggal: status
-                });
-            })
-            .catch((err) => {
-                console.log('err: ',err);
-                alert('Uh Oh error', err);
-            })
-        }
         
+        console.log('data yg msk ', id, week)
+        axios.post('https://erwar.id/proses/api/tunggal',{
+            id_karyawan: this.state.selectedName,
+            week: this.state.weekInput.toLowerCase()
+        })
+        .then((response) => {
+            console.log('data cari tunggal: ', response.data);
+            this.setState({dataTunggal: [...response.data]})
+            let ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
+            this.setState({
+                dataProsesTunggal: ds.cloneWithRows(response.data),
+                flagTunggal: status,
+                flagViewTunggal: status
+            });
+        })
+        .catch((err) => {
+            console.log('err: ',err);
+            alert('Uh Oh error', err);
+        })
     }
     componentDidMount() {
         this.getNamaKaryawan()
-        // this.AbsenIdKaryawan()
     }
 
     ProsesTunggal(id, week) {
@@ -426,7 +423,7 @@ export default class InputNilai extends Component {
                                             selectedValue={this.state.selectedName}
                                             onValueChange={(v) => this.setState({selectedName: v})}>
                                             {
-                                                datak.map(v =>  <Picker.Item key={v.ID} label={v.nama} value={v.ID} />) 
+                                                datak.map(v =>  <Picker.Item key={v.ID} label={v.nama} value={v.id_karyawan} />) 
                                             }
                                         </Picker>
                                         <TextInput
@@ -466,7 +463,9 @@ export default class InputNilai extends Component {
                                                     console.log('id: ',this.state.selectedName, 'kehadiran:',this.state.kehadiran, this.state.kerapihan, this.state.sikap, this.state.weekInput)
                                                     this.addAbsen(this.state.selectedName, this.state.kehadiran, this.state.kerapihan, this.state.sikap, this.state.weekInput, true)
                                                     // this.setModalAbsen(!this.state.modalAbsen)
-                                                    this.getDataTunggal(this.state.selectedName, this.state.weekInput, true)
+                                                    // setTimeout(() => {
+                                                    //     this.getDataTunggal(this.state.selectedName, this.state.weekInput, true)
+                                                    // }, 5000);
                                                     
                                                 }}
                                             >
