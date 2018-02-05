@@ -78,7 +78,7 @@ export default class InputNilai extends Component {
             datak = [...response.data]
         })
         .catch((err) => {
-            console.log('Uh Oh error', err);
+            console.log('Failed!', err);
         })
 
        
@@ -133,7 +133,7 @@ export default class InputNilai extends Component {
         })
         .catch((err) => {
             console.log('err: ',err);
-            alert('Uh Oh error', err);
+            alert('Failed!', err);
         })
     }
 
@@ -181,7 +181,7 @@ export default class InputNilai extends Component {
         })
         .catch((err) => {
             console.log('err: ',err);
-            alert('Uh Oh error', err);
+            alert('Failed!', err);
         })
         
     }
@@ -274,7 +274,7 @@ export default class InputNilai extends Component {
         })
         .catch((err) => {
             console.log('err: ',err);
-            alert('Uh Oh error', err);
+            alert('Failed!', err);
         })
     }
     componentDidMount() {
@@ -315,7 +315,7 @@ export default class InputNilai extends Component {
         })
         .catch((err) => {
             console.log('err: ',err);
-            alert('Uh Oh error', err);
+            alert('Failed!', err);
         })
     }
 

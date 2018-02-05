@@ -82,7 +82,7 @@ export default class AddKaryawan extends Component {
         })
         .catch((err) => {
             console.log('errr ', err);
-            alert('Uh Oh!.. Sorry Error.', err)
+            alert('Failed!', err)
         })
 
     }
@@ -102,7 +102,7 @@ export default class AddKaryawan extends Component {
         })
         .catch((err) => {
             console.log('errr ', err);
-            alert('Uh Oh!.. Sorry Error.')  
+            alert('Failed!')  
         })
     }
 
@@ -116,7 +116,7 @@ export default class AddKaryawan extends Component {
         })
         .catch((err) => {
             console.log('errr ', err);
-            alert('Uh Oh!.. Sorry Error.')  
+            alert('Failed!')  
         })
     }
 

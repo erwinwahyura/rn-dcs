@@ -40,7 +40,7 @@ export default class Report extends Component {
             })
             .catch((err) => {
                 console.log('err',err);
-                alert('Uh Oh Sorry Error!');
+                alert('Failed!');
             })
         } else if (obj.toLowerCase().substr(0,4) === 'week') {
             this.setState({flagText: false, })
@@ -54,7 +54,7 @@ export default class Report extends Component {
             })
             .catch((err) => {
                 console.log('err',err);
-                alert('Uh Oh Sorry Error!');
+                alert('Failed!');
             })
         } else {
             this.setState({flagText: false, })
@@ -67,7 +67,7 @@ export default class Report extends Component {
             })
             .catch((err) => {
                 console.log('err',err);
-                alert('Uh Oh Sorry Error!');
+                alert('Failed!');
             })
         }
     }
